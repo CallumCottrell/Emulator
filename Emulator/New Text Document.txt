@@ -1,0 +1,25 @@
+	;
+;This code is meant to test the ALU
+;instructions. 
+
+org #$0400 ; start PC here - arbitrary
+
+main ; a label
+
+movl #$50,R1 ; store 80 into r1
+
+movl #$10,R2 ; store 16 into r2
+
+sub.b R2,R1 ; subtract r2 from r1, store result in r1 
+
+BIT.B R2,R1
+
+BGE 
+
+ifGreaterThan ; second label - only reach if r2 is greater than r1
+		; which it is not yet
+
+movl #$50,R1 ; store 80 into r1
+
+movl #$10,R2 
+end main

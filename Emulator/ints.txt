@@ -1,0 +1,298 @@
+;
+; Interrupt driven input/output example
+; Input on device 1 and output on device 2
+; L. Hughes
+;
+;  7 July 2018 - LR pushed/pulled before calls to queuing routines in ISRs
+; 20 June 2018
+;
+; Equates
+;
+; Registers:
+;
+PC	equ	R7
+PSW	equ	R6
+SP	equ	R5
+LR	equ	R4
+;
+; PSW priorities and sleep bits
+;
+PRIOR7	equ	#$E0
+PRIOR4	equ	#$80
+PRIOR3	equ	#$60
+SLP	equ	#$8
+;
+; Status/control bits
+;
+DBA	equ	#4	; DBA bit
+IE	equ	#1	; IE bit
+;
+; Queue structure constants
+;
+QUEUE	equ	#0	; Position in IOQueue
+HEAD	equ	#4	; Position in IOQueue
+TAIL	equ	#5	; Position in IOQueue
+;
+; Booleans
+;
+TRUE	equ	#1
+FALSE	equ	#0
+;
+; ***** Device memory
+;
+	org	#$2
+Dev1SCR	byte	IE
+Dev1In	byte	#0
+Dev2SCR	byte	IE
+Dev2Out	byte	#0
+;
+; ***** Common memory (global)
+;
+	org	#$10
+IOQueue	bss	#4		; 0: Queue[0..4]
+	bss	#1		; 4: Head (0..3)
+	bss	#1		; 5: Tail (0..3)
+;
+OutBusy	bss	#1		; 
+;
+; ***** Mainline
+;
+	org	#$0100
+Mainline
+; Block all interrupts - by rights, CPU should start with priority 7
+	movlz	PRIOR7,PSW
+; Initialize stack pointer
+	movl	StkTop,SP
+	movh	StkTop,SP
+; Initialize devices
+	bl	InitDevices
+;
+; Enter sleep loop at priority 3
+;
+	movlz	PRIOR3,PSW
+MainLoop
+	bis	SLP,PSW		; Sleep
+	bal	MainLoop
+;
+; ***** Support routines
+;
+	org	#$2000
+; 
+; Device initialization code
+; Assumes priority 7
+;
+InitDevices
+	movlz	Dev1In,R0
+	ld.b	R0,R1		; Clear any pending input byte
+;
+	movl	IOQueue,R0	; R0 refers to IOQueue
+	movh	IOQueue,R0
+;
+	movlz	#1,R1
+	str	R1,R0,HEAD	; IOQueue.Head = 1
+	movlz	#0,R1
+	str	R1,R0,TAIL	; IOQueue.Tail = 0
+; 
+	movl	OutBusy,R0	; R0 refers to OutBusy
+	movh	OutBusy,R0	
+;
+	movl	FALSE,R1
+	st.b	R1,R0		; OutBusy = FALSE
+;
+	mov	LR,PC		; Return
+;
+; ***** Queue software
+;
+	org	#$3000
+;
+; Enqueue data
+; R3 is data to enqueue
+; R0 is queue structure
+; Return -1 in R3 if queue full; otherwise R3 unchanged
+;
+Enq
+; R1, R2 are volatile - save
+	st	R1,-SP
+	st	R2,-SP
+; Initialize R1 (head) and R2 (tail)
+	ldr	R0,HEAD,R1
+	ldr	R0,TAIL,R2
+; Check for full queue (head=tail)
+	cmp	R1,R2
+	beq	EnqFull
+; Store R3 in queue[head]
+	st	R0,-SP		; R0 to be modified, stack 
+	add	R1,R0		; R0 is address of queue element
+	st.b	R3,R0		; queue[head] = data
+; Increment and mask head
+	add	#1,R1		; R1 = 001, 010, 011, 100
+	bic	#4,R1		; R1 = 001, 010, 011, 000
+; Save new head
+	ld	SP+,R0		; R0 restored
+	str	R1,R0,HEAD	; IOQueue.Head = updated head
+	bal	EnqDone
+; Queue is full
+EnqFull
+	mov	#-1,R3		; Signal queue full
+;
+EnqDone
+; Restore volatile registers
+	ld	SP+,R2
+	ld	SP+,R1
+	mov	LR,PC		; return
+;
+; Dequeue data
+; R0 is queue structure
+; Return result in R1
+; If queue is empty, return -1 in R1
+Deq
+; R2 is volatile - save
+	st	R2,-SP
+; Initialize R1 (head) and R2 (tail)
+	ldr	R0,HEAD,R1
+	ldr	R0,TAIL,R2
+; Increment and mask tail
+	add	#1,R2		; R2 = 001, 010, 011, 100
+	bic	#4,R2		; R2 = 001, 010, 011, 000
+; Check for empty queue ((tail + 1) = head)
+	cmp	R1,R2
+	beq	DeqEmpty
+; Queue not empty - R1 = queue[tail]
+	st	R0,-SP		; R0 to be modified, stack 
+	add	R2,R0		; R0 is address of queue element
+	ld.b	R0,R1		; queue[head] = data
+; Save new tail
+	ld	SP+,R0		; R0 restored
+	str	R2,R0,TAIL	; IOQueue.Tail = updated tail
+	bal	DeqDone
+DeqEmpty
+	mov	#-1,R1
+;
+DeqDone
+; Restore volatile register
+	ld	SP+,R2
+	mov	LR,PC		; return
+;
+; ***** Interrupt service routines
+;
+	org	#$4000
+;
+; Device 1 ISR:
+; Character arrived on device 1 
+; Read character to clear DBA
+; If output busy, enqueue, otherwise write to output
+;
+Dev1ISR
+; Save volatile registers
+	st	R0,-SP	
+	st	R1,-SP
+	st	R3,-SP
+;  R1 refers to Dev1
+	movl	Dev1In,R1
+	movh	Dev1In,R1
+; Read input register - will clear DBA and Dev1's interrupt
+	ld.b	R1,R3		; R3 = Dev1In
+; Check if Device 2 is busy with output
+	movl	OutBusy,R1
+	movh	OutBusy,R1
+;
+	ld.b	R1,R0		; R0 = OutBusy
+;
+	cmp	TRUE,R0		; Result = R0 - TRUE
+	beq	Dev1OutBusy	; Dev2 is busy with output
+; 
+; Output is idle - must force output
+; Output must change to busy
+;
+	movl	TRUE,R0
+	st.b	R0,R1		; OutBusy = TRUE
+; Write data to Dev2Out
+	movl	Dev2Out,R1
+	movh	Dev2Out,R1
+; Dev2Out = data
+	st.b	R3,R1		; Output should start
+	bal	Dev1Done
+;
+; Output is busy - queue character
+;
+Dev1OutBusy
+; Queue char in R3
+	movl	IOQueue,R0
+	movh	IOQueue,R0	; R0 refers to IOQueue
+; enq(data)
+	st	LR,-SP		; Save LR
+	bl	Enq		; Ignore queue overflow
+	ld	SP+,LR		; Restore LR
+; Restore volatile registers
+Dev1Done
+	ld	SP+,R3
+	ld	SP+,R1
+	ld	SP+,R0
+	mov	LR,PC
+;
+	org	#$5000
+;
+; Device 2 ISR
+; Character has been sent on device 2
+; Check queue for character
+; If it exists, continue sending (OutBusy is still TRUE)
+; If nothing, set OutBusy to FALSE
+;
+Dev2ISR
+; Save volatile registers
+	st	R0,-SP
+	st	R1,-SP
+	st	R3,-SP
+; Check queue
+	movl	IOQueue,R0
+	movh	IOQueue,R0	; R0 refers to IOQueue
+; deq(data)
+	st	LR,-SP		; Save LR
+	bl	Deq		; R3 = -1 if empty
+	ld	SP+,LR		; Restore LR
+	cmp	#-1,R3		; Result = R3 - (-1)
+	beq	Dev2QueueEmpty
+; Write R3 to Dev2Out
+	movl	Dev2Out,R1
+	movh	Dev2Out,R1
+; Dev2Out = data
+	st.b	R3,R1		; Output should start
+	bal	Dev2Done
+; Nothing left to send, OutBusy is FALSE
+Dev2QueueEmpty
+	movl	OutBusy,R1
+	movh	OutBusy,R1
+;
+	movl	FALSE,R0
+	st.b	R0,R1		; OutBusy = FALSE
+;
+Dev2Done
+; Restore volatile registers
+	ld	SP+,R3
+	ld	SP+,R1
+	ld	SP+,R0
+	mov	LR,PC		; Return
+;
+; ***** High memory - vector addresses
+;
+	org	#$FFC0
+StkTop	
+;
+; Device 1's vector
+;
+	org	#$FFC4
+	word	PRIOR4
+	word	Dev1ISR
+;
+; Device 2's vector
+;
+	word	PRIOR4
+	word	Dev2ISR
+;
+; Startup/reset vector - ensures PSW.PRI is 7
+;
+	org	#$FFFC
+	word	PRIOR7
+	word	Mainline
+;
+	end	Mainline

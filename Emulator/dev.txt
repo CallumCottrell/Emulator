@@ -1,0 +1,45 @@
+;
+; Example of device polling using X-Makina
+; L. Hughes
+; 14 June 2018
+;
+DBA	equ	#$4	; DBA bit in status registers
+;
+; Device memory
+	org	#$0
+DEV0	byte	#$2	; Device 0 control/status register - Input
+	byte	#0	; Device 0 data register - reserve (input)
+;
+DEV1	byte	#0	; Device 1 control/status register - Output
+	byte	#0	; Device 1 data register - reserve (output)
+;
+;
+; Code memory
+	org	#$100
+Mainline
+;
+; R0 has address of Device 0
+;
+	movlz	DEV0,R0	; R0 = address of DEV0
+;
+; Input polling loop
+InLoop
+	ld.b	R0,R1	; R1.byte = mem[DEV0] ; control/status register
+	and.b	DBA,R1	; R1 = R1 & DBA
+	beq	InLoop	; If result is zero (nothing received), continue polling
+;
+; Device 0 has data - read it
+	ldr.b	R0,#1,R1	; R1.byte = mem[DEV0 + 1]
+;
+; Check if Device 1 can be written to
+; Device 1 ready for output
+	str.b	R1,R0,#3	; mem[DEV0 + 3] = R1 (data read)
+;
+OutLoop
+	ldr.b	R0,#2,R2	; R2.byte = mem[DEV0 + 2] ; control/status register
+	and.b	DBA,R2	; R2 = R2 & DBA
+	beq	OutLoop	; if result is zero (still xmitting), continue polling
+; Repeat for next character
+	bal	InLoop
+;
+	end	Mainline

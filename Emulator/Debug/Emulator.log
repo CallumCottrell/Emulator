@@ -1,0 +1,9 @@
+﻿  ControlUnit.c
+c:\users\callu\source\repos\emulator\emulator\cpu.h(10): warning C4005: 'MAX_NAME_LENGTH': macro redefinition
+  c:\users\callu\source\repos\emulator\emulator\loaders.h(9): note: see previous definition of 'MAX_NAME_LENGTH'
+c:\users\callu\source\repos\emulator\emulator\controlunit.c(17): warning C4091: 'extern ': ignored on left of 'SIZE' when no variable is declared
+c:\users\callu\source\repos\emulator\emulator\controlunit.c(18): warning C4091: 'extern ': ignored on left of 'ACTION' when no variable is declared
+c:\users\callu\source\repos\emulator\emulator\controlunit.c(19): warning C4091: 'extern ': ignored on left of 'INST_TYPE' when no variable is declared
+c:\users\callu\source\repos\emulator\emulator\controlunit.c(20): warning C4091: 'extern ': ignored on left of 'CONSTANTS' when no variable is declared
+c:\users\callu\source\repos\emulator\emulator\controlunit.c(530): warning C4101: 'setCarry': unreferenced local variable
+  Emulator.vcxproj -> C:\Users\callu\source\repos\Emulator\Debug\Emulator.exe
