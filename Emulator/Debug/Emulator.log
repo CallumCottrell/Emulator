@@ -1,9 +1,20 @@
-﻿  ControlUnit.c
-c:\users\callu\source\repos\emulator\emulator\cpu.h(10): warning C4005: 'MAX_NAME_LENGTH': macro redefinition
-  c:\users\callu\source\repos\emulator\emulator\loaders.h(9): note: see previous definition of 'MAX_NAME_LENGTH'
-c:\users\callu\source\repos\emulator\emulator\controlunit.c(17): warning C4091: 'extern ': ignored on left of 'SIZE' when no variable is declared
-c:\users\callu\source\repos\emulator\emulator\controlunit.c(18): warning C4091: 'extern ': ignored on left of 'ACTION' when no variable is declared
-c:\users\callu\source\repos\emulator\emulator\controlunit.c(19): warning C4091: 'extern ': ignored on left of 'INST_TYPE' when no variable is declared
-c:\users\callu\source\repos\emulator\emulator\controlunit.c(20): warning C4091: 'extern ': ignored on left of 'CONSTANTS' when no variable is declared
-c:\users\callu\source\repos\emulator\emulator\controlunit.c(530): warning C4101: 'setCarry': unreferenced local variable
-  Emulator.vcxproj -> C:\Users\callu\source\repos\Emulator\Debug\Emulator.exe
+﻿  Debugger.c
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\CPU.h(10,1): warning C4005: 'MAX_NAME_LENGTH': macro redefinition
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Loaders.h(9): message : see previous definition of 'MAX_NAME_LENGTH'
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(63,11): warning C4473: 'scanf_s' : not enough arguments passed for format string
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(63,11): message : placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(63,11): message : the missing variadic argument 2 is required by format string '%c'
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(63,11): message : this argument is used as a buffer size
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(73,23): warning C4013: 'isInBounds' undefined; assuming extern returning int
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(97,14): warning C4473: 'scanf_s' : not enough arguments passed for format string
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(97,14): message : placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(97,14): message : the missing variadic argument 2 is required by format string '%c'
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(97,14): message : this argument is used as a buffer size
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(54,6): warning C4101: 'newAddress': unreferenced local variable
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(145,11): warning C4473: 'scanf_s' : not enough arguments passed for format string
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(145,11): message : placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(145,11): message : the missing variadic argument 2 is required by format string '%c'
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(145,11): message : this argument is used as a buffer size
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(182,27): warning C4013: 'isValidAddress' undefined; assuming extern returning int
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debugger.c(211,26): warning C4013: 'isValidRegister' undefined; assuming extern returning int
+  Emulator.vcxproj -> C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debug\Emulator.exe

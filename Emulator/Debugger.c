@@ -150,13 +150,13 @@ void memoryMenu() {
 			printf("Indicate the lower bound of memory to display.\n");
 
 			do {
-				scanf_s("%d", &lowBound);
+				scanf_s(" %04x", &lowBound);
 			} while (isInBounds(lowBound) == BAD_ADDRESS);
 
 			printf("Indicate the upper bound of memory to display.\n");
 
 			do {
-				scanf_s("%d", &uppBound);
+				scanf_s(" %04x", &uppBound);
 				if (lowBound > uppBound) {
 					printf("Lowerbound greater than Upperbound, so ");
 					uppBound = BAD_ADDRESS;
@@ -173,12 +173,12 @@ void memoryMenu() {
 		case 'c':
 			printf("What address do you want to change?\n");
 			do {
-				scanf_s("%d", &newAddress);
+				scanf_s(" %04x", &newAddress);
 			} while (isInBounds(newAddress) == BAD_ADDRESS);
 
 			printf("What value do you want the address to be?\n");
 			do {
-				scanf_s("%d", &newValue);
+				scanf_s(" %04x", &newValue);
 			} while (isValidAddress(newValue) == BAD_ADDRESS);
 			memory.bytes[newAddress] = newValue;
 
@@ -205,7 +205,7 @@ void registerMenu() {
 	
 	do {
 		scanf_s("%d", &reg);
-		if (reg > 0) {
+		if (reg < 0) {
 			return;
 		}// return to the menu without doing anything
 	} while (isValidRegister(reg) == BAD_ADDRESS);
@@ -213,14 +213,15 @@ void registerMenu() {
 	printf("Enter value you would like to set R%d to. \n", reg);
 
 		do {
-			scanf_s("%d", &newValue);
+			scanf_s("%04x", &newValue);
 		} while (isInBounds(newValue) == BAD_ADDRESS);
+		reg_const[REGISTER][reg] = newValue;
 
 }
 
 int isInBounds(int address) {
 	//Check if the bound fits in the memory array
-	if (address > MAX_ADDRESS | address < MIN_ADDRESS) {
+	if (address > MAX_ADDRESS || address < MIN_ADDRESS) {
 		printf("Invalid Address. Try again. \n");
 		return BAD_ADDRESS;
 	}
@@ -228,7 +229,7 @@ int isInBounds(int address) {
 }
 
 int isValidRegister(int reg) {
-	if (reg > 8 | reg < 0) {
+	if (reg > 8 || reg < 0) {
 		printf("The Register given is not valid \n");
 		return BAD_ADDRESS;
 	}
@@ -236,7 +237,7 @@ int isValidRegister(int reg) {
 }
 
 int isValidAddress(int value) {
-	if (value > 65535 | value < 0) {
+	if (value > 65535 || value < 0) {
 		printf("The value does not fit");
 		return BAD_ADDRESS;
 	}

@@ -1,0 +1,2 @@
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debug\Emulator.exe
+C:\Users\callu\Documents\GitHub\Emulator\Emulator\Debug\Emulator.pdb
